@@ -1,11 +1,17 @@
 # server.py
 
 from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Optional
 from environment import EmailEnv
 from models import Action
 from grader import grade
 
 app = FastAPI()
+
+
+class ResetRequest(BaseModel):
+    task: Optional[str] = "easy"
 
 env = EmailEnv()
 
@@ -15,8 +21,9 @@ def home():
     return {"message": "OpenEnv Email Triage Running"}
 
 
-@app.get("/reset")
-def reset(task: str = "easy"):
+@app.post("/reset")
+def reset(body: Optional[ResetRequest] = None):
+    task = body.task if body and body.task else "easy"
     obs = env.reset(task)
     return obs
 
