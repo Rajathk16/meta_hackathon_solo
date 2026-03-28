@@ -13,6 +13,7 @@ app = FastAPI()
 class ResetRequest(BaseModel):
     task: Optional[str] = "easy"
 
+
 env = EmailEnv()
 
 
@@ -25,15 +26,15 @@ def home():
 def reset(body: Optional[ResetRequest] = None):
     task = body.task if body and body.task else "easy"
     obs = env.reset(task)
-    return obs
+    return {"observation": obs.model_dump()}
 
 
 @app.post("/step")
 def step(action: Action):
     obs, reward, done, info = env.step(action)
     return {
-        "observation": obs,
-        "reward": reward,
+        "observation": obs.model_dump(),
+        "reward": reward.value,
         "done": done,
         "info": info
     }
@@ -41,7 +42,13 @@ def step(action: Action):
 
 @app.get("/state")
 def state():
-    return env.state()
+    st = env.state()
+    return {
+        "emails": [e.model_dump() for e in st["emails"]],
+        "handled": st["handled"],
+        "correct_resolutions": st["correct_resolutions"],
+        "steps": st["steps"]
+    }
 
 
 @app.get("/tasks")
