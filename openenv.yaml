@@ -1,0 +1,19 @@
+spec_version: "1.0.0"
+name: "EmailTriageEnv"
+description: "An environment simulating customer support email triage. The agent must process an inbox of emails by classifying, responding, or escalating them."
+version: "1.0.0"
+tasks:
+  - id: easy
+    name: "Easy Support Triage"
+    description: "Triage basic support and login issues."
+  - id: medium
+    name: "Medium Triage"
+    description: "Handle slightly more complex billing and bug tracking emails."
+  - id: hard
+    name: "Hard Triage"
+    description: "Handle high-stress scenarios like data breaches and legal complaints."
+tags:
+  - language-model
+  - email
+  - customer-support
+entrypoint: "server:app"
