@@ -1,7 +1,10 @@
-# server.py
+# server.py — The actual FastAPI application.
+# NOTE: There is also a server/ package for openenv validate compliance.
+# Python package resolution: when running `uvicorn server:app` from /app,
+# Python finds server/ (package) first. The server/__init__.py re-exports
+# `app` from this file using importlib to avoid circular imports.
 
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 from environment import EmailEnv
@@ -72,13 +75,11 @@ def grader():
 
 @app.get("/health")
 def health():
-    """Required by openenv validate: must return {"status": "healthy"}."""
     return {"status": "healthy"}
 
 
 @app.get("/metadata")
 def metadata():
-    """Required by openenv validate: must return {"name": str, "description": str}."""
     return {
         "name": "openenv_email",
         "description": (
@@ -90,14 +91,13 @@ def metadata():
 
 @app.get("/schema")
 def schema():
-    """Required by openenv validate: must return action, observation, and state schemas."""
     return {
         "action": {
             "type": "object",
             "properties": {
                 "type": {"type": "string", "description": "Action type: respond, escalate, archive"},
                 "email_id": {"type": "string", "description": "ID of the email to act on"},
-                "label": {"type": "string", "description": "Optional label for the action"},
+                "label": {"type": "string", "description": "Optional label"},
             },
             "required": ["type", "email_id"],
         },
@@ -123,7 +123,6 @@ def schema():
 
 @app.post("/mcp")
 def mcp(body: Optional[dict] = None):
-    """Required by openenv validate: must return a JSON-RPC 2.0 payload."""
     return {
         "jsonrpc": "2.0",
         "id": (body or {}).get("id", None),
