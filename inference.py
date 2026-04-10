@@ -8,6 +8,8 @@ API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY", "hf_your_token_here")
 MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Meta-Llama-3-8B-Instruct")
 
+import sys
+
 def run_agent(task_name: str, env: EmailEnv):
     print(f"[START] task={task_name}", flush=True)
     obs = env.reset(task=task_name)
@@ -71,17 +73,19 @@ What is your next action?
                 )
                 action_dict = json.loads(response.choices[0].message.content)
         except Exception as e:
-            print("Error parsing LLM response:", e)
+            import sys
+            print(f"Error parsing LLM response: {e}", file=sys.stderr, flush=True)
             action_dict = {"type": "noop", "email_id": obs.current_email.id, "label": ""}
 
         # Step the environment
         try:
             action = Action(**action_dict)
             obs, reward, done, info = env.step(action)
-            print(f"Action Taken: {action_dict} | Reward: {reward.value} ({reward.reason})")
             print(f"[STEP] step={obs.steps} reward={reward.value}", flush=True)
         except Exception as e:
-            print(f"Error executing action {action_dict}: {e}")
+            # Silently fail or log to stderr to avoid stdout pollution
+            import sys
+            print(f"Error executing action {action_dict}: {e}", file=sys.stderr, flush=True)
             break
 
         if done:
@@ -90,7 +94,6 @@ What is your next action?
     from grader import grade
     final_state = env.state()
     score = grade(final_state)
-    print(f"Task '{task_name}' finished. Final Score: {score}")
     print(f"[END] task={task_name} score={score} steps={final_state['steps']}", flush=True)
     return score
 
