@@ -9,7 +9,7 @@ API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY", "hf_your_token_here")
 MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Meta-Llama-3-8B-Instruct")
 
 def run_agent(task_name: str, env: EmailEnv):
-    print(f"\n--- Starting Task: {task_name} ---")
+    print(f"[START] task={task_name}", flush=True)
     obs = env.reset(task=task_name)
     
     # Initialize OpenAI client using the global variables
@@ -79,6 +79,7 @@ What is your next action?
             action = Action(**action_dict)
             obs, reward, done, info = env.step(action)
             print(f"Action Taken: {action_dict} | Reward: {reward.value} ({reward.reason})")
+            print(f"[STEP] step={obs.steps} reward={reward.value}", flush=True)
         except Exception as e:
             print(f"Error executing action {action_dict}: {e}")
             break
@@ -90,6 +91,7 @@ What is your next action?
     final_state = env.state()
     score = grade(final_state)
     print(f"Task '{task_name}' finished. Final Score: {score}")
+    print(f"[END] task={task_name} score={score} steps={final_state['steps']}", flush=True)
     return score
 
 if __name__ == "__main__":
